@@ -3,6 +3,7 @@
 *.midi
 *.mid
 *.pkl
+*.zip
 data/log
 
 
