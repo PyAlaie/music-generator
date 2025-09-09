@@ -319,19 +319,25 @@ class Preprocess:
             with open(files_path + '/' + file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
-            res = []
+            header = ["delta_time", "event", "arg1", "arg2", "arg3"] 
+            header = ','.join(header)
+
+            res = [header]
             for line in lines:
-                line = line.split(',')
+                line = line.strip().split(',')
 
                 if line[2].strip() in excluding_tags:
                     continue
+
+                if line[2] in ['Program_c', 'Pitch_bend_c']:
+                    line.append("")
 
                 del line[0]
 
                 res.append(','.join(line))
             
             with open(output_path + '/' + file_name, "w") as output_file:
-                output_file.writelines([i for i in res])
+                output_file.writelines([i+'\n' for i in res])
 
             input_file.close()
 
@@ -407,7 +413,7 @@ if __name__ == "__main__":
     func_id = preprocess.remove_meta_data(last_pipeline_id=func_id, try_to_load=True)
     func_id = preprocess.preprocess_notes(last_pipeline_id=func_id, try_to_load=True)
     func_id = preprocess.scale_timings(last_pipeline_id=func_id, try_to_load=True)
-    func_id = preprocess.calculate_delta_times(last_pipeline_id=func_id, try_to_load=False)
+    func_id = preprocess.calculate_delta_times(last_pipeline_id=func_id, try_to_load=True)
     func_id = preprocess.finalize_preprocess(last_pipeline_id=func_id, try_to_load=False)
     preprocess.turn_in(func_id)
     preprocess.save_progress()
