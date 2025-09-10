@@ -12,7 +12,8 @@ class Crawl:
 class MidiFiles:
     database = DATA_PATH + '/db.csv'
     raw_midi_files = DATA_PATH + '/midi'
-    raw_csv_files = DATA_PATH + '/csv'
+    encoded_files = DATA_PATH + '/encoded'
     preprocessed_csv_files = DATA_PATH + '/preprocessed'
     temp_space = DATA_PATH + '/temp'
     log_space = DATA_PATH + '/log'
+    weights_path = DATA_PATH + '/models'
