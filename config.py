@@ -17,4 +17,4 @@ class MidiFiles:
     temp_space = DATA_PATH + '/temp'
     log_space = DATA_PATH + '/log'
     weights_path = DATA_PATH + '/models'
-    generated_music_path = DATA_PATH + '/generated'
+    generated_csv_path = DATA_PATH + '/generated_csv'

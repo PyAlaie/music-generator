@@ -399,7 +399,7 @@ class Preprocess:
             with open(files_path + '/' + file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
-            header = ["delta_time", "event", "arg1", "arg2", "arg3"] 
+            header = ["delta_time", "event", "channel", "pitch", "velocity", "duration"] 
             header = ','.join(header)
 
             res = [header]
@@ -495,6 +495,6 @@ if __name__ == "__main__":
     func_id = preprocess.scale_timings(last_pipeline_id=func_id, try_to_load=True)
     func_id = preprocess.calculate_note_durations(last_pipeline_id=func_id)
     func_id = preprocess.calculate_delta_times(last_pipeline_id=func_id)
-    func_id = preprocess.finalize_preprocess(last_pipeline_id=func_id, try_to_load=False)
-    preprocess.turn_in(func_id)
+    # func_id = preprocess.finalize_preprocess(last_pipeline_id=func_id, try_to_load=False)
+    # preprocess.turn_in(func_id)
     preprocess.save_progress()
