@@ -1,6 +1,7 @@
 import config, os, tqdm, random, inspect, pickle, shutil
 from mido import MidiFile, MidiTrack, merge_tracks
 import py_midicsv as pm
+from midi2audio import FluidSynth
 
 class BackToMidi:
     def __init__(self, try_to_load_progress=True):
@@ -194,6 +195,66 @@ class BackToMidi:
         
         return func_id
 
+    def convert_back_to_midi(self, try_to_load=True, last_pipeline_id=None):
+        if try_to_load:
+            func_name = inspect.currentframe().f_code.co_name
+            if func_name in self.progress:
+                print(f"Loaded {func_name} progress!")
+                return self.progress[func_name]
+
+        if last_pipeline_id is None:
+            raise ValueError("last pipe line is none!")
+
+        files_path = self.temp_space + '/' + last_pipeline_id 
+
+        func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
+        output_path = self.temp_space + '/' + func_id
+        os.makedirs(output_path)
+
+        files = os.listdir(files_path)
+
+        for file in tqdm.tqdm(files, desc="Converting to midi"):
+            with open(files_path + '/' + file, "r") as f:
+                lines = f.readlines()
+
+            midi_object = pm.csv_to_midi(lines)
+            name = '.'.join(file.split('.')[:-1]) + '.mid'
+
+            with open(output_path + '/' + name, "wb") as output_file:
+                midi_writer = pm.FileWriter(output_file)
+                midi_writer.write(midi_object)
+        
+        self.progress[inspect.currentframe().f_code.co_name] = func_id
+
+        return func_id
+    
+    def render_wavs(self, try_to_load=True, last_pipeline_id=None):
+        if try_to_load:
+            func_name = inspect.currentframe().f_code.co_name
+            if func_name in self.progress:
+                print(f"Loaded {func_name} progress!")
+                return self.progress[func_name]
+
+        if last_pipeline_id is None:
+            raise ValueError("last pipe line is none!")
+
+        files_path = self.temp_space + '/' + last_pipeline_id 
+
+        func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
+        output_path = self.temp_space + '/' + func_id
+        os.makedirs(output_path)
+
+        files = os.listdir(files_path)
+
+        fs = FluidSynth()
+        for file in tqdm.tqdm(files, desc="Rendering files"):
+            name = '.'.join(file.split('.')[:-1]) + '.wav'
+            fs.midi_to_audio(files_path + '/' + file, output_path + '/' + name)
+        
+        self.progress[inspect.currentframe().f_code.co_name] = func_id
+
+        return func_id
+
     def save_progress(self, clear_cache=True):
         file_path = self.preprocess_id + '.pkl'
 
@@ -245,10 +306,6 @@ if __name__ == "__main__":
     func_id = backToMidi.cumulate_delta_times(last_pipeline_id=func_id, try_to_load=False)
     func_id = backToMidi.unpack_durations(last_pipeline_id=func_id, try_to_load=False)
     func_id = backToMidi.add_final_headers(last_pipeline_id=func_id, try_to_load=False)
-    # func_id = preprocess.remove_meta_data(last_pipeline_id=func_id, try_to_load=True)
-    # func_id = preprocess.preprocess_notes(last_pipeline_id=func_id, try_to_load=True)
-    # func_id = preprocess.scale_timings(last_pipeline_id=func_id, try_to_load=True)
-    # func_id = preprocess.calculate_delta_times(last_pipeline_id=func_id, try_to_load=True)
-    # func_id = preprocess.finalize_preprocess(last_pipeline_id=func_id, try_to_load=False)
-    # preprocess.turn_in(func_id)
+    func_id = backToMidi.convert_back_to_midi(last_pipeline_id=func_id, try_to_load=False)
+    # func_id = backToMidi.render_wavs(last_pipeline_id=func_id, try_to_load=False)
     backToMidi.save_progress()
