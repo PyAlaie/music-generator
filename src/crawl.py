@@ -19,6 +19,7 @@ STREAM_CHUNK_SIZE = 4096
 
 async def batch_download(info, callback=None, max_conn=32, progress=True, progress_settings={}):
     q = asyncio.Queue()
+    callback_lock = asyncio.Lock()
     if progress:
         pg = tqdm(total=len(info), **progress_settings)
 
@@ -35,7 +36,8 @@ async def batch_download(info, callback=None, max_conn=32, progress=True, progre
                     if progress:
                         pg.update(1)
                     if callback:
-                        await callback(*args)
+                        async with callback_lock:
+                            await callback(*args)
             q.task_done()
         
     tasks = [asyncio.create_task(worker()) for _ in range(max_conn)]
