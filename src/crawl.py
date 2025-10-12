@@ -97,7 +97,7 @@ def read_db(path=config.MidiFiles.database):
         headers = ['Composer', 'Name', 'FileName', 'Url']
 
         df = pd.DataFrame(columns=headers)
-        pathlib.Path(path).parent.mkdir(parents=True)
+        pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(path, index=False)
 
     db = pd.read_csv(path)
