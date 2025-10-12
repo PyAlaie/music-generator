@@ -12,7 +12,7 @@ class BackToMidi:
             pass
         else:
             self.preprocess_id = f"{self.__class__.__name__}_{self.generate_random_string(6)}"
-            self.temp_space = config.MidiFiles.temp_space + '/' + self.preprocess_id
+            self.temp_space = config.MidiFiles.temp_space / self.preprocess_id
             self.progress = {}
 
     def generate_random_string(self, length=16):
@@ -32,7 +32,7 @@ class BackToMidi:
                 return self.progress[func_name]
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         files = os.listdir(self.generated_csv_path)
@@ -42,7 +42,7 @@ class BackToMidi:
         header = "delta_time,event,channel,pitch,velocity,duration\n"
 
         for file in tqdm.tqdm(files, desc="Adding headers"):
-            with open(self.generated_csv_path + '/' + file, 'r') as f:
+            with open(self.generated_csv_path / file, 'r') as f:
                 lines = f.readlines()
 
             res = []
@@ -60,7 +60,7 @@ class BackToMidi:
 
                 res.append(new_line + '\n')
             
-            with open(output_path + '/' + file, "w") as output_file:
+            with open(output_path / file, "w") as output_file:
                 output_file.writelines([i for i in res])
         
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -77,16 +77,16 @@ class BackToMidi:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         files = os.listdir(files_path)
 
         for file in tqdm.tqdm(files, desc="Cumulating delta times"):
-            with open(files_path + '/' + file, 'r') as f:
+            with open(files_path / file, 'r') as f:
                 lines = f.readlines()
 
             res = []
@@ -102,7 +102,7 @@ class BackToMidi:
                 parsed[1] = str(cumulated_time)
                 res.append(','.join(parsed))
 
-            with open(output_path + '/' + file, "w") as output_file:
+            with open(output_path / file, "w") as output_file:
                 output_file.writelines([i for i in res])
         
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -119,16 +119,16 @@ class BackToMidi:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         files = os.listdir(files_path)
 
         for file in tqdm.tqdm(files, desc="Unpacknig durations"):
-            with open(files_path + '/' + file, 'r') as f:
+            with open(files_path / file, 'r') as f:
                 lines = f.readlines()
 
             res = []
@@ -147,7 +147,7 @@ class BackToMidi:
 
             res.sort(key= lambda x: int(x.split(',')[1]))
 
-            with open(output_path + '/' + file, "w") as output_file:
+            with open(output_path / file, "w") as output_file:
                 output_file.writelines([i for i in res])
         
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -164,16 +164,16 @@ class BackToMidi:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         files = os.listdir(files_path)
 
         for file in tqdm.tqdm(files, desc="Add final headers"):
-            with open(files_path + '/' + file, 'r') as f:
+            with open(files_path / file, 'r') as f:
                 lines = f.readlines()
 
             last_time = int(lines[-1].split(',')[1])
@@ -188,7 +188,7 @@ class BackToMidi:
             lines.append(tail1)
             lines.append(tail2)
 
-            with open(output_path + '/' + file, "w") as output_file:
+            with open(output_path / file, "w") as output_file:
                 output_file.writelines([i for i in lines])
         
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -205,22 +205,22 @@ class BackToMidi:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         files = os.listdir(files_path)
 
         for file in tqdm.tqdm(files, desc="Converting to midi"):
-            with open(files_path + '/' + file, "r") as f:
+            with open(files_path / file, "r") as f:
                 lines = f.readlines()
 
             midi_object = pm.csv_to_midi(lines)
             name = '.'.join(file.split('.')[:-1]) + '.mid'
 
-            with open(output_path + '/' + name, "wb") as output_file:
+            with open(output_path / name, "wb") as output_file:
                 midi_writer = pm.FileWriter(output_file)
                 midi_writer.write(midi_object)
         
@@ -238,10 +238,10 @@ class BackToMidi:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         files = os.listdir(files_path)
@@ -249,7 +249,7 @@ class BackToMidi:
         fs = FluidSynth()
         for file in tqdm.tqdm(files, desc="Rendering files"):
             name = '.'.join(file.split('.')[:-1]) + '.wav'
-            fs.midi_to_audio(files_path + '/' + file, output_path + '/' + name)
+            fs.midi_to_audio(files_path / file, output_path / name)
         
         self.progress[inspect.currentframe().f_code.co_name] = func_id
 
@@ -258,7 +258,7 @@ class BackToMidi:
     def save_progress(self, clear_cache=True):
         file_path = self.preprocess_id + '.pkl'
 
-        with open(self.temp_space + '/' + file_path, "wb") as file:
+        with open(self.temp_space / file_path, "wb") as file:
             pickle.dump(self.progress, file)
 
         if clear_cache:
@@ -266,7 +266,7 @@ class BackToMidi:
             directories = [d for d in os.listdir(self.temp_space) if os.path.isdir(os.path.join(self.temp_space, d))]
             for directory in directories:
                 if directory not in values:
-                    shutil.rmtree(self.temp_space + '/' + directory)
+                    shutil.rmtree(self.temp_space / directory)
 
     def load_progress(self):
         progresses = os.listdir(config.MidiFiles.temp_space)
@@ -280,20 +280,20 @@ class BackToMidi:
         
         elif len(filtered) == 1:
             progress = filtered[0]
-            pkl_file = config.MidiFiles.temp_space + '/' + progress + '/' + progress + '.pkl'
+            pkl_file = config.MidiFiles.temp_space / progress / f"{progress}.pkl"
         
         else:
             [print("{i}. {progress}") for i, progress in enumerate(filtered)]
             option = int(input())
 
             progress = filtered[option]
-            pkl_file = config.MidiFiles.temp_space + '/' + progress + '/' + progress + '.pkl'
+            pkl_file = config.MidiFiles.temp_space / progress / f"{progress}.pkl"
 
         
         with open(pkl_file, "rb") as file:
             self.progress = pickle.load(file)
             self.preprocess_id = progress
-            self.temp_space = config.MidiFiles.temp_space + '/' + self.preprocess_id
+            self.temp_space = config.MidiFiles.temp_space / self.preprocess_id
         
         print(f"Loaded progress {progress}")
 
