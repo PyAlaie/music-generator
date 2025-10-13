@@ -150,8 +150,9 @@ def download_composers_midi(composers_dict, no_redownload=True):
         db.to_csv(config.MidiFiles.database, index=False)
         print('Saved the progress!')
 
-
-if __name__ == '__main__':
+def main():
     composers = extract_composers_urls()
     download_composers_midi(composers)
 
+if __name__ == '__main__':
+    main()

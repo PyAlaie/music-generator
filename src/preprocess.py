@@ -23,7 +23,7 @@ class Preprocess:
         
         return ''.join(random_string)
 
-    def merge_midi_tracks(self, try_to_load=True):
+    def merge_midi_tracks(self, try_to_load=True, **kwargs):
         if try_to_load:
             func_name = inspect.currentframe().f_code.co_name
             if func_name in self.progress:
@@ -352,7 +352,7 @@ class Preprocess:
 
         csv_files = os.listdir(files_path)
 
-        for file_name in tqdm.tqdm(csv_files, desc="Scaling the ticks"):
+        for file_name in tqdm.tqdm(csv_files, desc="Calculating delta times"):
             with open(files_path / file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
@@ -485,16 +485,35 @@ class Preprocess:
             d = os.path.join(dest, item)
             shutil.copy2(s, d)
 
-if __name__ == "__main__":
-    preprocess = Preprocess()
+    def run_pipeline(self, pick_up_from=None):
+        pipeline_items = {
+            "merge_midi_tracks": self.merge_midi_tracks,
+            "convert_midis_to_csv": self.convert_midis_to_csv,
+            "remove_meta_data": self.remove_meta_data,
+            "preprocess_notes": self.preprocess_notes,
+            "scale_timings": self.scale_timings,
+            "calculate_note_durations": self.calculate_note_durations,
+            "calculate_delta_times": self.calculate_delta_times,
+            "finalize_preprocess": self.finalize_preprocess,
+        }
 
-    func_id = preprocess.merge_midi_tracks()
-    func_id = preprocess.convert_midis_to_csv(last_pipeline_id=func_id)
-    func_id = preprocess.remove_meta_data(last_pipeline_id=func_id)
-    func_id = preprocess.preprocess_notes(last_pipeline_id=func_id)
-    func_id = preprocess.scale_timings(last_pipeline_id=func_id, try_to_load=True)
-    func_id = preprocess.calculate_note_durations(last_pipeline_id=func_id)
-    func_id = preprocess.calculate_delta_times(last_pipeline_id=func_id)
-    func_id = preprocess.finalize_preprocess(last_pipeline_id=func_id, try_to_load=False)
-    preprocess.turn_in(func_id)
-    preprocess.save_progress()
+        try_to_load = True
+        index = 0
+        func_id = None
+        for name, func in pipeline_items.items():
+            if pick_up_from == str(index) or pick_up_from == name:
+                try_to_load = False
+
+            index += 1
+            
+            func_id = func(try_to_load=try_to_load, last_pipeline_id=func_id)
+        
+        self.turn_in(func_id)
+        self.save_progress()
+
+def main(pick_up_from=None):
+    preprocess = Preprocess()
+    preprocess.run_pipeline(pick_up_from=pick_up_from)
+
+if __name__ == "__main__":
+    main()
