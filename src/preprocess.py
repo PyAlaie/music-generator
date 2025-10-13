@@ -11,7 +11,7 @@ class Preprocess:
             pass
         else:
             self.preprocess_id = f"{self.__class__.__name__}_{self.generate_random_string(6)}"
-            self.temp_space = config.MidiFiles.temp_space + '/' + self.preprocess_id
+            self.temp_space = config.MidiFiles.temp_space / self.preprocess_id
             self.progress = {}
 
     def generate_random_string(self, length=16):
@@ -23,7 +23,7 @@ class Preprocess:
         
         return ''.join(random_string)
 
-    def merge_midi_tracks(self, try_to_load=True):
+    def merge_midi_tracks(self, try_to_load=True, **kwargs):
         if try_to_load:
             func_name = inspect.currentframe().f_code.co_name
             if func_name in self.progress:
@@ -33,7 +33,7 @@ class Preprocess:
         midi_files = os.listdir(self.raw_midis_path)
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         logs = []
@@ -50,20 +50,20 @@ class Preprocess:
 
         for midi_file in tqdm.tqdm(midi_files, desc="Merging Tracks"):
             try:
-                mid = MidiFile(self.raw_midis_path + '/' + midi_file)
+                mid = MidiFile(self.raw_midis_path / midi_file)
 
                 if not is_single_piano(mid):
                     raise ValueError("File is not a single piano music!")
                 
                 merged = merge_tracks(mid.tracks)
                 mid.tracks = [merged] 
-                mid.save(output_path + '/' + midi_file)
+                mid.save(output_path / midi_file)
             
             except Exception as e:
                 log = f"File {midi_file} had some error: {e}"
                 logs.append(log)
 
-        with open(config.MidiFiles.log_space + '/' + func_id, 'w') as file:
+        with open(config.MidiFiles.log_space / func_id, 'w') as file:
             file.writelines([i + '\n' for i in logs])
 
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -78,13 +78,13 @@ class Preprocess:
                 return self.progress[func_name]
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         files_path = config.MidiFiles.raw_midi_files
 
         if last_pipeline_id is not None:
-            files_path = self.temp_space + '/' + last_pipeline_id 
+            files_path = self.temp_space / last_pipeline_id 
 
         files = os.listdir(files_path)
 
@@ -94,7 +94,7 @@ class Preprocess:
         logs = []
         for file in tqdm.tqdm(files, desc="Converting"):
             try:
-                csv_file = pm.midi_to_csv(files_path + '/' + file)
+                csv_file = pm.midi_to_csv(files_path / file)
                 csv_files.append(csv_file)
 
                 name = file.split('.')[:-1]
@@ -105,11 +105,11 @@ class Preprocess:
                 logs.append(file)
 
         for file, name in tqdm.tqdm(zip(csv_files, names), desc="Wrting"):
-            with open(output_path + '/' + name + ".csv", "w") as f:
+            with open(output_path / name + ".csv", "w") as f:
                 f.writelines(file)
         
         print("Exceptions:", len(logs))
-        with open(config.MidiFiles.log_space + '/' + func_id, "w") as f:
+        with open(config.MidiFiles.log_space / func_id, "w") as f:
             f.writelines([i + '\n' for i in logs])
 
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -126,17 +126,17 @@ class Preprocess:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         csv_files = os.listdir(files_path)
         meta_data_tags = ["Control_c", "Pitch_bend_c", "Program_c", "Poly_aftertouch_c", "Channel_aftertouch_c", "System_exclusive", "Channel_prefix", "Sequencer_specific", "MIDI_port", "Title_t", "Copyright_t", "Instrument_name_t", "Marker_t", "Cue_point_t", "Lyric_t", "Text_t", "Key_signature", "Time_signature", "SMPTE_offset"]
 
         for file_name in tqdm.tqdm(csv_files, desc="Removing metadata"):
-            with open(files_path + '/' + file_name, 'r') as input_file:
+            with open(files_path / file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
             filtered_lines = []
@@ -147,7 +147,7 @@ class Preprocess:
                 if line[2] not in meta_data_tags: # if it is metadata
                     filtered_lines.append(','.join(line))
             
-            with open(output_path + '/' + file_name, "w") as output_file:
+            with open(output_path / file_name, "w") as output_file:
                 output_file.writelines([i + '\n' for i in filtered_lines])
         
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -164,10 +164,10 @@ class Preprocess:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         tag = "Note_off_c"
@@ -176,7 +176,7 @@ class Preprocess:
         csv_files = os.listdir(files_path)
 
         for file_name in tqdm.tqdm(csv_files, desc="Preprocessing notes"):
-            with open(files_path + '/' + file_name, 'r') as input_file:
+            with open(files_path / file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
             filtered_lines = []
@@ -190,7 +190,7 @@ class Preprocess:
                 
                 filtered_lines.append(','.join(line))
 
-            with open(output_path + '/' + file_name, "w") as output_file:
+            with open(output_path / file_name, "w") as output_file:
                 output_file.writelines([i + '\n' for i in filtered_lines])
         
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -207,16 +207,16 @@ class Preprocess:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         csv_files = os.listdir(files_path)
 
         for file_name in tqdm.tqdm(csv_files, desc="Scaling the ticks"):
-            with open(files_path + '/' + file_name, 'r') as input_file:
+            with open(files_path / file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
             header = lines.pop(0)
@@ -261,7 +261,7 @@ class Preprocess:
             line[1] = '0'
             res[-1] = ','.join(line)
             
-            with open(output_path + '/' + file_name, "w") as output_file:
+            with open(output_path / file_name, "w") as output_file:
                 output_file.writelines([i for i in res])
 
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -278,16 +278,16 @@ class Preprocess:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         csv_files = os.listdir(files_path)
 
         for file_name in tqdm.tqdm(csv_files, desc="Calculating durations"):
-            with open(files_path + '/' + file_name, 'r') as input_file:
+            with open(files_path / file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
             res = []
@@ -327,7 +327,7 @@ class Preprocess:
 
                 res.append(','.join(parsed) + '\n')
             
-            with open(output_path + '/' + file_name, "w") as output_file:
+            with open(output_path / file_name, "w") as output_file:
                 output_file.writelines([i for i in res])
 
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -344,16 +344,16 @@ class Preprocess:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         csv_files = os.listdir(files_path)
 
-        for file_name in tqdm.tqdm(csv_files, desc="Scaling the ticks"):
-            with open(files_path + '/' + file_name, 'r') as input_file:
+        for file_name in tqdm.tqdm(csv_files, desc="Calculating delta times"):
+            with open(files_path / file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
             res = []
@@ -368,7 +368,7 @@ class Preprocess:
 
                 res.append(','.join(parsed))
             
-            with open(output_path + '/' + file_name, "w") as output_file:
+            with open(output_path / file_name, "w") as output_file:
                 output_file.writelines([i for i in res])
 
         self.progress[inspect.currentframe().f_code.co_name] = func_id
@@ -385,10 +385,10 @@ class Preprocess:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
 
         func_id = f"{inspect.currentframe().f_code.co_name}_{self.generate_random_string(6)}"
-        output_path = self.temp_space + '/' + func_id
+        output_path = self.temp_space / func_id
         os.makedirs(output_path)
 
         csv_files = os.listdir(files_path)
@@ -396,7 +396,7 @@ class Preprocess:
         excluding_tags = ["Header", "Start_track", "End_of_file", "End_track"]
 
         for file_name in tqdm.tqdm(csv_files, desc="Finalizing"):
-            with open(files_path + '/' + file_name, 'r') as input_file:
+            with open(files_path / file_name, 'r') as input_file:
                 lines = input_file.readlines()
             
             header = ["delta_time", "pitch", "duration"] 
@@ -416,7 +416,7 @@ class Preprocess:
 
                 res.append(','.join(line))
             
-            with open(output_path + '/' + file_name, "w") as output_file:
+            with open(output_path / file_name, "w") as output_file:
                 output_file.writelines([i+'\n' for i in res])
 
             input_file.close()
@@ -428,7 +428,7 @@ class Preprocess:
     def save_progress(self, clear_cache=True):
         file_path = self.preprocess_id + '.pkl'
 
-        with open(self.temp_space + '/' + file_path, "wb") as file:
+        with open(self.temp_space / file_path, "wb") as file:
             pickle.dump(self.progress, file)
 
         if clear_cache:
@@ -436,7 +436,7 @@ class Preprocess:
             directories = [d for d in os.listdir(self.temp_space) if os.path.isdir(os.path.join(self.temp_space, d))]
             for directory in directories:
                 if directory not in values:
-                    shutil.rmtree(self.temp_space + '/' + directory)
+                    shutil.rmtree(self.temp_space / directory)
 
     def load_progress(self):
         progresses = os.listdir(config.MidiFiles.temp_space)
@@ -450,20 +450,20 @@ class Preprocess:
         
         elif len(filtered) == 1:
             progress = filtered[0]
-            pkl_file = config.MidiFiles.temp_space + '/' + progress + '/' + progress + '.pkl'
+            pkl_file = config.MidiFiles.temp_space / progress / f"{progress}.pkl"
         
         else:
             [print("{i}. {progress}") for i, progress in enumerate(filtered)]
             option = int(input())
 
             progress = filtered[option]
-            pkl_file = config.MidiFiles.temp_space + '/' + progress + '/' + progress + '.pkl'
+            pkl_file = config.MidiFiles.temp_space / progress / f"{progress}.pkl"
 
         
         with open(pkl_file, "rb") as file:
             self.progress = pickle.load(file)
             self.preprocess_id = progress
-            self.temp_space = config.MidiFiles.temp_space + '/' + self.preprocess_id
+            self.temp_space = config.MidiFiles.temp_space / self.preprocess_id
         
         print(f"Loaded progress {progress}")
 
@@ -473,7 +473,7 @@ class Preprocess:
         if last_pipeline_id is None:
             raise ValueError("last pipe line is none!")
 
-        files_path = self.temp_space + '/' + last_pipeline_id 
+        files_path = self.temp_space / last_pipeline_id 
         dest = config.MidiFiles.preprocessed_csv_files
 
         for item in os.listdir(dest):
@@ -485,16 +485,35 @@ class Preprocess:
             d = os.path.join(dest, item)
             shutil.copy2(s, d)
 
-if __name__ == "__main__":
-    preprocess = Preprocess()
+    def run_pipeline(self, pick_up_from=None):
+        pipeline_items = {
+            "merge_midi_tracks": self.merge_midi_tracks,
+            "convert_midis_to_csv": self.convert_midis_to_csv,
+            "remove_meta_data": self.remove_meta_data,
+            "preprocess_notes": self.preprocess_notes,
+            "scale_timings": self.scale_timings,
+            "calculate_note_durations": self.calculate_note_durations,
+            "calculate_delta_times": self.calculate_delta_times,
+            "finalize_preprocess": self.finalize_preprocess,
+        }
 
-    func_id = preprocess.merge_midi_tracks()
-    func_id = preprocess.convert_midis_to_csv(last_pipeline_id=func_id)
-    func_id = preprocess.remove_meta_data(last_pipeline_id=func_id)
-    func_id = preprocess.preprocess_notes(last_pipeline_id=func_id)
-    func_id = preprocess.scale_timings(last_pipeline_id=func_id, try_to_load=True)
-    func_id = preprocess.calculate_note_durations(last_pipeline_id=func_id)
-    func_id = preprocess.calculate_delta_times(last_pipeline_id=func_id)
-    func_id = preprocess.finalize_preprocess(last_pipeline_id=func_id, try_to_load=False)
-    preprocess.turn_in(func_id)
-    preprocess.save_progress()
+        try_to_load = True
+        index = 0
+        func_id = None
+        for name, func in pipeline_items.items():
+            if pick_up_from == str(index) or pick_up_from == name:
+                try_to_load = False
+
+            index += 1
+            
+            func_id = func(try_to_load=try_to_load, last_pipeline_id=func_id)
+        
+        self.turn_in(func_id)
+        self.save_progress()
+
+def main(pick_up_from=None):
+    preprocess = Preprocess()
+    preprocess.run_pipeline(pick_up_from=pick_up_from)
+
+if __name__ == "__main__":
+    main()

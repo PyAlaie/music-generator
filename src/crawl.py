@@ -97,7 +97,7 @@ def read_db(path=config.MidiFiles.database):
         headers = ['Composer', 'Name', 'FileName', 'Url']
 
         df = pd.DataFrame(columns=headers)
-        pathlib.Path(path).parent.mkdir(parents=True)
+        pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(path, index=False)
 
     db = pd.read_csv(path)
@@ -150,8 +150,9 @@ def download_composers_midi(composers_dict, no_redownload=True):
         db.to_csv(config.MidiFiles.database, index=False)
         print('Saved the progress!')
 
-
-if __name__ == '__main__':
+def main():
     composers = extract_composers_urls()
     download_composers_midi(composers)
 
+if __name__ == '__main__':
+    main()
