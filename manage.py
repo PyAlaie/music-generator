@@ -16,7 +16,10 @@ class Options:
         Preprocess().run_pipeline(pick_up_from=arg)
 
     def back_to_midi(args):
-        pass
+        from src.BackToMidi import BackToMidi
+
+        arg = args[0] if len(args) != 0 else None
+        BackToMidi().run_pipeline(pick_up_from=arg)
 
 options = {
     "crawl": Options.crawl,
