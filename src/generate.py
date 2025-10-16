@@ -1,5 +1,5 @@
 from src.lstm import get_model
-import config, os, random, pandas as pd, numpy as np, tqdm
+import config, os, random, pandas as pd, numpy as np, tqdm, pathlib
 import tensorflow as tf
 
 def load_model():
@@ -115,19 +115,12 @@ def generate(model, seed_sequence, steps=150):
 
 
 def reverse_preprocess_file(df):
-    """
-    Convert a preprocessed DataFrame back to original scales.
-    Assumes columns:
-    delta_time, arg1, arg2, arg3, Control_c, Note_on_c, Program_c, Pitch_bend_c
-    """
     df = df.copy()
 
     df['delta_time'] = np.expm1(df['delta_time']).round().astype(int)
     df['duration'] = np.expm1(df['duration']).round().astype(int)
 
     df["velocity"] = 127
-    # df["velocity"] = df["velocity"].round().astype(int)
-    # df["octave"] = df["octave"].round().astype(int)
 
     df.loc[df["zero_delta_time"] > 0.5, "delta_time"] = 0
 
@@ -165,8 +158,17 @@ def trun_back_to_df(generated_sequence, start=0):
     return reversed_df
 
 
-def save_csvs(df_list):
-    pass
+def save_csvs(df_list, file_names, remove_pervious_generated_csvs=False):
+    save_path = config.MidiFiles.generated_csv_path
+    pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
+
+    if remove_pervious_generated_csvs:
+        for item in os.listdir(save_path):
+            item_path = save_path / item
+            os.remove(item_path)
+
+    for name, df in zip(file_names, df_list):
+        df.to_csv(save_path / name, index=False)
 
 
 def main():
@@ -174,12 +176,17 @@ def main():
     seeds = load_seeds(k=1)
 
     generated_csvs = []
+    names = []
     for name, seed in seeds:
         print(f"Generating seed: {name}")
         seq = generate(model, seed, 10)
 
         csv = trun_back_to_df(seq)
         generated_csvs.append(csv)
+        names.append(name)
+
+    save_csvs(generated_csvs, names)
+    print("Done!")
 
 
 if __name__ == "__main__":
