@@ -19,3 +19,12 @@ class MidiFiles:
     weights_path = DATA_PATH / 'models'
     generated_csv_path = DATA_PATH / 'generated_csv'
 
+
+class LstmParameters:
+    seq_len = 50
+    num_features = 25
+
+    batch_size = 128
+    epochs = 30
+
+    final_model_path = DATA_PATH / 'final_model.weights.h5'
