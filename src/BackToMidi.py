@@ -24,7 +24,7 @@ class BackToMidi:
         
         return ''.join(random_string)
 
-    def add_headers_and_cols(self, try_to_load=True):
+    def add_headers_and_cols(self, try_to_load=True, **kwargs):
         if try_to_load:
             func_name = inspect.currentframe().f_code.co_name
             if func_name in self.progress:
