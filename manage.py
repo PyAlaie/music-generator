@@ -1,7 +1,7 @@
 import pathlib
 import sys
 
-sys.path.append(pathlib.Path(__file__).parent)
+sys.path.append(str(pathlib.Path(__file__).parent))
 import config
 
 class Options:
@@ -21,15 +21,24 @@ class Options:
         arg = args[0] if len(args) != 0 else None
         BackToMidi().run_pipeline(pick_up_from=arg)
 
+    def generate(args):
+        import src.generate 
+
+        arg = args[0] if len(args) != 0 else 10
+        src.generate.main(arg)
+
 options = {
     "crawl": Options.crawl,
     "preprocess": Options.preprocess,
     "back_to_midi": Options.back_to_midi,
+    "generate": Options.generate,
 }
 
 def main(args):
     if len(args) == 0:
-        print(options.keys())
+        print("Commands:")
+        [print(f"    {i}") for i in options.keys()]
+        
     else:
         arg = args[0]
         option = options.get(arg)

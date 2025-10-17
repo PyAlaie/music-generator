@@ -171,17 +171,21 @@ def save_csvs(df_list, file_names, remove_pervious_generated_csvs=False):
         df.to_csv(save_path / name, index=False)
 
 
-def main():
+def main(k=10, steps=150, include_seed_in_result=False):
+    start = 50
+    if include_seed_in_result:
+        start = 0
+    
     model = load_model()
-    seeds = load_seeds(k=1)
+    seeds = load_seeds(k=k)
 
     generated_csvs = []
     names = []
     for name, seed in seeds:
         print(f"Generating seed: {name}")
-        seq = generate(model, seed, 10)
+        seq = generate(model, seed, steps)
 
-        csv = trun_back_to_df(seq)
+        csv = trun_back_to_df(seq, start)
         generated_csvs.append(csv)
         names.append(name)
 
