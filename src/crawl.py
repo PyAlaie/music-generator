@@ -3,18 +3,16 @@ import pathlib
 import re
 import random
 import os
-import time
 
 import requests
 from bs4 import BeautifulSoup 
 from tqdm.asyncio import tqdm
 import pandas as pd
 import aiohttp
-
 import config
 
 
-STREAM_CHUNK_SIZE = 4096
+STREAM_CHUNK_SIZE = config.Crawl.STREAM_CHUNK_SIZE
 
 
 async def batch_download(info, callback=None, max_conn=32, progress=True, progress_settings={}):
