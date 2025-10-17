@@ -24,7 +24,7 @@ class BackToMidi:
         
         return ''.join(random_string)
 
-    def add_headers_and_cols(self, try_to_load=True):
+    def add_headers_and_cols(self, try_to_load=True, **kwargs):
         if try_to_load:
             func_name = inspect.currentframe().f_code.co_name
             if func_name in self.progress:
@@ -299,13 +299,32 @@ class BackToMidi:
 
         return True
 
-if __name__ == "__main__":
-    backToMidi = BackToMidi()
+    def run_pipeline(self, pick_up_from=None):
+        pipeline_items = {
+            "add_headers_and_cols": self.add_headers_and_cols,
+            "cumulate_delta_times": self.cumulate_delta_times,
+            "unpack_durations": self.unpack_durations,
+            "add_final_headers": self.add_final_headers,
+            "convert_back_to_midi": self.convert_back_to_midi,
+        }
 
-    func_id = backToMidi.add_headers_and_cols(try_to_load=False)
-    func_id = backToMidi.cumulate_delta_times(last_pipeline_id=func_id, try_to_load=False)
-    func_id = backToMidi.unpack_durations(last_pipeline_id=func_id, try_to_load=False)
-    func_id = backToMidi.add_final_headers(last_pipeline_id=func_id, try_to_load=False)
-    func_id = backToMidi.convert_back_to_midi(last_pipeline_id=func_id, try_to_load=False)
-    # func_id = backToMidi.render_wavs(last_pipeline_id=func_id, try_to_load=False)
-    backToMidi.save_progress()
+        try_to_load = True
+        index = 0
+        func_id = None
+        for name, func in pipeline_items.items():
+            if pick_up_from == str(index) or pick_up_from == name:
+                try_to_load = False
+
+            index += 1
+            
+            func_id = func(try_to_load=try_to_load, last_pipeline_id=func_id)
+        
+        # self.turn_in(func_id)
+        self.save_progress()
+
+def main(pick_up_from=None):
+    backToMidi = BackToMidi()
+    backToMidi.run_pipeline(pick_up_from=pick_up_from)
+
+if __name__ == "__main__":
+    main()
