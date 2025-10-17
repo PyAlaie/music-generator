@@ -9,6 +9,8 @@ class Crawl:
     base_url = 'https://www.midiworld.com/'
     composers_url = 'composers.htm'
 
+    STREAM_CHUNK_SIZE = 4096
+    
 
 class MidiFiles:
     database = DATA_PATH / 'db.csv'
@@ -21,10 +23,12 @@ class MidiFiles:
 
 
 class LstmParameters:
+    transpose_offset = 12 # Should be a number between 1 and 12
+
     seq_len = 50
     num_features = 25
 
-    batch_size = 128
+    batch_size = 256
     epochs = 30
 
     final_model_path = DATA_PATH / 'final_model.weights.h5'
