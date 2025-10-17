@@ -12,7 +12,7 @@ def load_model():
         model.load_weights(model_weights_path)
         print("Weights Loaded!")
     except Exception as e:
-        raise e
+        raise FileNotFoundError("Model weights not found!")
 
     return model
 
