@@ -1,9 +1,12 @@
 import config, os, tqdm, random, inspect, pickle, shutil
 from mido import MidiFile, MidiTrack, merge_tracks
 import py_midicsv as pm
+from pathlib import Path
 
 class Preprocess:
     def __init__(self, try_to_load_progress=True):
+        Path(config.DATA_PATH / "temp").mkdir(parents=True, exist_ok=True)
+
         self.raw_midis_path = config.MidiFiles.raw_midi_files
         self.try_to_load_progress = try_to_load_progress
 
