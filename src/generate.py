@@ -171,7 +171,19 @@ def save_csvs(df_list, file_names, remove_pervious_generated_csvs=False):
         df.to_csv(save_path / name, index=False)
 
 
-def main(k=10, steps=150, include_seed_in_result=False):
+def save_csv(df, file_name, remove_pervious_generated_csvs=False):
+    save_path = config.MidiFiles.generated_csv_path
+    pathlib.Path(save_path).mkdir(parents=True, exist_ok=True)
+
+    if remove_pervious_generated_csvs:
+        for item in os.listdir(save_path):
+            item_path = save_path / item
+            os.remove(item_path)
+
+    df.to_csv(save_path / file_name, index=False)
+
+
+def main(k=3, steps=150, include_seed_in_result=False):
     start = 50
     if include_seed_in_result:
         start = 0
@@ -188,8 +200,9 @@ def main(k=10, steps=150, include_seed_in_result=False):
         csv = trun_back_to_df(seq, start)
         generated_csvs.append(csv)
         names.append(name)
+        save_csv(csv, name)
 
-    save_csvs(generated_csvs, names)
+    # save_csvs(generated_csvs, names)
     print("Done!")
 
 

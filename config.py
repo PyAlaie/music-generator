@@ -26,7 +26,7 @@ class LstmParameters:
     transpose_offset = 12 # Should be a number between 1 and 12
 
     seq_len = 50
-    num_features = 25
+    num_features = 26
 
     batch_size = 256
     epochs = 30

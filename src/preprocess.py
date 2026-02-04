@@ -94,18 +94,19 @@ class Preprocess:
         logs = []
         for file in tqdm.tqdm(files, desc="Converting"):
             try:
-                csv_file = pm.midi_to_csv(files_path / file)
+                csv_file = pm.midi_to_csv(str(files_path / file))
                 csv_files.append(csv_file)
 
                 name = file.split('.')[:-1]
                 name = ''.join(name)
                 names.append(name)
 
-            except:
+            except Exception as e:
                 logs.append(file)
+                print(e)
 
         for file, name in tqdm.tqdm(zip(csv_files, names), desc="Wrting"):
-            with open(output_path / name + ".csv", "w") as f:
+            with open(str(output_path / name) + ".csv", "w") as f:
                 f.writelines(file)
         
         print("Exceptions:", len(logs))
